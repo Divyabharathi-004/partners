@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:customer-system-api="http://www.mulesoft.org/schema/mule/customer-system-api" xmlns:complaints-system-api="http://www.mulesoft.org/schema/mule/complaints-system-api"
+	xmlns:order-details-api="http://www.mulesoft.org/schema/mule/order-details-api"
+	xmlns:orders-api="http://www.mulesoft.org/schema/mule/orders-api" xmlns:payments-api="http://www.mulesoft.org/schema/mule/payments-api" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/payments-api http://www.mulesoft.org/schema/mule/payments-api/current/mule-payments-api.xsd
+http://www.mulesoft.org/schema/mule/orders-api http://www.mulesoft.org/schema/mule/orders-api/current/mule-orders-api.xsd
+http://www.mulesoft.org/schema/mule/order-details-api http://www.mulesoft.org/schema/mule/order-details-api/current/mule-order-details-api.xsd
+http://www.mulesoft.org/schema/mule/complaints-system-api http://www.mulesoft.org/schema/mule/complaints-system-api/current/mule-complaints-system-api.xsd
+http://www.mulesoft.org/schema/mule/customer-system-api http://www.mulesoft.org/schema/mule/customer-system-api/current/mule-customer-system-api.xsd">
+	
+	<payments-api:config name="Payments_API_Config" doc:name="Payments-API Config" doc:id="a81fa8cb-1cc1-44f3-8846-829e531b8c1d" property_host="grp1-payment.us-e2.cloudhub.io" property_port="80" property_protocol="HTTP"/>
+	<orders-api:config name="OrdersAPI_Config" doc:name="OrdersAPI Config" doc:id="f954c3f6-d917-4f6d-84bd-708087dbb488" property_host="grp1-order.us-e2.cloudhub.io" property_port="80" property_protocol="HTTP"/>
+	<order-details-api:config name="OrderDetailsAPI_Config" doc:name="OrderDetailsAPI Config" doc:id="5631d397-7da9-4cd4-96db-49a2697d22a0" property_host="grp1-orderdetails.us-e2.cloudhub.io" property_port="80" property_protocol="HTTP"/>
+	<complaints-system-api:config name="Complaints_system_api_Config" doc:name="Complaints-system-api Config" doc:id="1ea52996-7e08-4c69-afd2-9df6b05605ae" property_host="grp1-complaint.us-e2.cloudhub.io" property_port="80" property_protocol="HTTP"/>
+	<customer-system-api:config name="Customer_System_API_Config" doc:name="Customer-System-API Config" doc:id="7411f941-511d-4ead-b102-af842cb17b35" property_host="grp1-customer.us-e2.cloudhub.io" property_port="80" property_protocol="HTTP"/>
+	<flow name="getDataForPendingComplaints" doc:id="ff721181-c984-4b3a-b05c-e99c9ece7597">
+		<http:listener doc:name="Listener" doc:id="e2f2e501-38da-4145-8880-40cd0cde6b48" config-ref="HTTP_Listener_config" path="/pendingComplaints" />
+		<scatter-gather doc:name="Scatter-Gather" doc:id="ad3bb752-2ee8-445e-9b2a-da12d6450387">
+			<route>
+				<payments-api:get-all-payments-data doc:name="Get All Payments Data'" doc:id="ce0126c3-9a7e-4a26-ac10-6c8db3e67cc9" config-ref="Payments_API_Config"/>
+			</route>
+			<route>
+				<orders-api:get-orders-method doc:name="GET ORDERS METHOD" doc:id="8dab4a3c-1a93-4e8e-bc45-77f5ff93f943" config-ref="OrdersAPI_Config"/>
+			</route>
+			<route>
+				<order-details-api:get-all-method doc:name="GET ALL METHOD" doc:id="50f0692d-1ecc-4aa5-be9d-9e059701443c" config-ref="OrderDetailsAPI_Config"/>
+			</route>
+			<route>
+				<complaints-system-api:get-all-complaints doc:name="GET all Complaints." doc:id="9a9a47d3-a0ef-48ca-9c80-52dc3a9d565a" config-ref="Complaints_system_api_Config" complaint-status='#["Pending"]'/>
+			</route>
+		</scatter-gather>
+		<flow-ref doc:name="TransformingDataFlow" doc:id="66dc48c5-d71b-4ddc-b3f5-2fc428218889" name="transformingData" />
+	</flow>
+	<flow name="getDataByComplaintID" doc:id="519de1dc-4e95-4868-a5b5-2fed517245f1">
+		<http:listener doc:name="Listener" doc:id="3136febc-cfbf-4649-94ba-4301cce93485" config-ref="HTTP_Listener_config" path="/partner/{CID}" />
+		<complaints-system-api:get-complaint-by-complaint-id doc:name="GET Complaint by Complaint-ID." doc:id="f41eaefa-7916-41d2-b4f3-64f7a5c56741" config-ref="Complaints_system_api_Config" complaint-id="#[attributes.uriParams.CID]"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="6a511a38-58ca-4ed1-8501-01f6f2f3f5b6">
+			<route>
+				<payments-api:get-all-payments-data doc:name="Get All Payments Data'" doc:id="14fb8c5f-e7cb-43d7-8629-3c47c1b85df5" config-ref="Payments_API_Config" customer-number="#[payload.customerNumber]"/>
+			</route>
+			<route>
+				<orders-api:get-orders-by-id doc:name="GET ORDERS BY ID" doc:id="be304bd4-fa4f-4247-8ed0-e2f84d6167b0" config-ref="OrdersAPI_Config" id="#[payload.orderID]"/>
+			</route>
+			<route>
+				<order-details-api:get-all-method doc:name="GET ALL METHOD" doc:id="4b6d026f-df01-48cf-bed5-16f6c8bb7cc3" config-ref="OrderDetailsAPI_Config" product-code="#[payload.productID]" order-number="#[payload.orderID]"/>
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Transform to Required Format" doc:id="f544d97d-e0a4-4270-9603-cf4a2e64302a">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Payment Details": payload."0".payload filter ((item, index) -> (item.paymentDate == payload."1".payload.orderDate)),
+	"Order Details":{
+		OrderNumber: payload."1".payload.orderNumber,
+		ProductCode: payload."2".payload.productCode,
+		OrderDate: payload."1".payload.orderDate,
+		Status: payload."1".payload.orderStatus
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="getDataByCustomerNumber" doc:id="bfa87c27-f8a7-4039-acd2-ef2ed4545662">
+		<http:listener doc:name="Listener" doc:id="3db0df41-b72d-4a26-8594-5abe276e2907" config-ref="HTTP_Listener_config" path="/cust-pay/{customerNumber}" />
+		<scatter-gather doc:name="Scatter-Gather" doc:id="08a03dd0-504b-4778-ac14-51a471816ce9">
+			<route>
+				<customer-system-api:get-a-customer-detail-by-id doc:name="Get a Customer Detail By ID" doc:id="5debc176-bb4a-4f86-9bd0-ebe9353b861a" config-ref="Customer_System_API_Config" cid="#[attributes.uriParams.customerNumber]"/>
+			</route>
+			<route>
+				<payments-api:get-all-payments-data doc:name="Get All Payments Data'" doc:id="b85ebf4f-9588-4060-8366-bc0638156607" config-ref="Payments_API_Config" customer-number="#[attributes.uriParams.customerNumber]"/>
+			</route>
+			<route >
+				<ee:transform doc:name="customerNumber" doc:id="9e25fcc7-d4a5-4644-88d7-14c3bc31a3b2" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="customerNumber" ><![CDATA[attributes.uriParams.customerNumber as Number]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<orders-api:get-orders-method doc:name="GET ORDERS METHOD" doc:id="1dc69821-3835-4758-8294-da0569a103e0" config-ref="OrdersAPI_Config"/>
+				<ee:transform doc:name="Filter" doc:id="4f1dacfe-1dbc-4a1e-a5d9-1765fece7493" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload filter((item, index) -> (item.customerNumber == vars.customerNumber))]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Transform to Required Format" doc:id="b93e6353-ad42-4b0d-acb8-c548ed4af0ff">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Customer Details": {
+			CustomerNumber: payload."0".payload.customerNumber,
+			CustomerName: payload."0".payload.customerName,
+			Phone: payload."0".payload.phone,
+			Email:payload."0".payload.email,
+			CreditLimit: payload."0".payload.creditLimit
+		},
+	"Payment Details": payload."1".payload,
+	"Order Details": payload."2".payload
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="prteners-processFlow" doc:id="836f5593-a0f3-4611-a815-33d519ab5ff3" >
+		<http:listener doc:name="Listener" doc:id="8abede59-7d02-40ba-9210-9455c02d719e" config-ref="HTTP_Listener_config" path="/cust-pay"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="7ba7a853-e963-4175-aca1-3d1c6a1c1ae1" >
+			<route >
+				<customer-system-api:get-all-customers-data doc:name="Get All Customers Data" doc:id="f694ec5b-d20f-4b0b-81f1-ba017d29dfed" config-ref="Customer_System_API_Config"/>
+			</route>
+			<route >
+				<payments-api:get-all-payments-data doc:name="Get All Payments Data'" doc:id="65a961b6-514c-4bf1-b3f6-7aceba2e0223" config-ref="Payments_API_Config"/>
+			</route>
+			<route >
+				<orders-api:get-orders-method doc:name="GET ORDERS METHOD" doc:id="dfc14730-4f41-4173-9fc2-db3163374bcb" config-ref="OrdersAPI_Config" />
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Join Customer and Payments" doc:id="1ecc7f3d-0a2a-43f4-8751-142a8be487b4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::Arrays
+---
+join (payload."0".payload, payload."1".payload, (customer) -> customer.customerNumber, (payment) -> payment.customerNumber)]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="orderData" ><![CDATA[%dw 2.0
+output application/json
+---
+payload."2".payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Map" doc:id="98f1fd05-a645-4af5-8c2c-e67641f8e323" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+	CustomerDetails: $.l,
+	PaymentDetails: $.r
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Join Orders" doc:id="90bf445d-c063-485b-a078-3d949c616d87" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::Arrays
+---
+join (payload, vars.orderData, (combined) -> combined.CustomerDetails.customerNumber, (order) -> order.customerNumber)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Map" doc:id="db047f67-14d0-401c-9dd9-58987542de35" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+	CustomerDetails: $.l.CustomerDetails,
+	PaymentsDetails: $.l.PaymentDetails,
+	OrderDetails: $.r
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform to Required Format" doc:id="774113f5-ea7f-4300-a849-2a54fd2a8f6d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+	CustomerDetails:{
+		CustomerNumber: $.CustomerDetails.customerNumber,
+		CustomerName: $.CustomerDetails.customerName,
+		Phone: $.CustomerDetails.phone,
+		Email:$.CustomerDetails.email,
+		CreditLimit: $.CustomerDetails.creditLimit,
+	},
+	PaymentsDetails: $.PaymentsDetails,
+	OrderDetails: $.OrderDetails
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<sub-flow name="transformingData" doc:id="270ed3d2-f883-4573-94c1-6cd50db8b8c3" >
+		<ee:transform doc:name="Join Complaint and Order" doc:id="309b0168-8ba5-4fcf-8ea6-a755f5f87231">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::Arrays
+---
+join (payload."1".payload, payload."3".payload, (order) -> order.orderNumber, (complaint) -> complaint.orderID)]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="Payment"><![CDATA[payload."0".payload filter ((item, index) -> (payload."3".payload.customerNumber contains item.customerNumber))]]></ee:set-variable>
+				<ee:set-variable variableName="OrderDetails"><![CDATA[payload."2".payload filter ((item, index) -> (payload."3".payload.productID contains item.productCode))]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Map" doc:id="ebc3d54a-df82-46a7-b6e4-01d9b2921b63">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+	Order: $.l,
+	Complaint: $.r
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Join Payment by Payment Date" doc:id="f0b84a6f-2d64-462e-8a1d-cfac0be4e0ba">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::Arrays
+---
+join (payload, vars.Payment, (order) -> order.Order.orderDate, (payment) -> payment.paymentDate)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Map" doc:id="9cb3c7ee-adfb-4f60-a605-796e1457cb9f">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+	Order: $.l.Order,
+	Complaint: $.l.Complaint,
+	Payment: $.r
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Join OrderDetails by orderNumber" doc:id="4c33356d-0245-45b9-b25e-6397114a14e3">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::Arrays
+---
+join (payload, vars.OrderDetails, (order) -> order.Order.orderNumber, (details) -> details.orderNumber)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Map" doc:id="bd0f9646-2782-4f82-a0b1-623e4bec9af0">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+	Order: $.l.Order,
+	Complaint: $.l.Complaint,
+	Payment: $.l.Payment,
+	Product: $.r
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform to Required Format" doc:id="6c7fd267-aac6-4685-990d-6514c80d6743">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+    complentID: $.Complaint.complaintID,
+    customerNumber: $.Complaint.customerNumber,
+    OrderDetails: {
+        orderNumber: $.Product.orderNumber,
+        productCode: $.Product.productCode,
+        quantityOrdered: $.Product.quantityOrdered,
+        priceEach: $.Product.priceEach
+    },
+    PaymentDetails : {
+        checkNumber: $.Payment.paymentDate,
+        amount: $.Payment.amount,
+        paymentDate: $.Payment.paymentDate
+    }
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>

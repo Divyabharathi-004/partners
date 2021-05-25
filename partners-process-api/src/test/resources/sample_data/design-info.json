@@ -1,0 +1,8 @@
+{
+  "sampleData": {
+    "4f1dacfe-1dbc-4a1e-a5d9-1765fece7493": {
+      "vars-customerNumber": "sample_data/java.dwl",
+      "payload": "sample_data/list_json.json"
+    }
+  }
+}

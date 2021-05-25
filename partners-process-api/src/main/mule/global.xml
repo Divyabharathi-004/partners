@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="b867f74a-10b4-4634-a98e-d293a954eee8" >
+		<http:listener-connection host="${http.host}" port="${http.port}" />
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="3289d11e-95bf-487a-9255-51ae913b596b" file="partner-${env}.yaml" />
+	<configuration doc:name="Configuration" doc:id="b3e587fa-fc08-4b9f-8943-4ceaaec5d70d" defaultErrorHandler-ref="globalError_Handler" />
+	<error-handler name="globalError_Handler" doc:id="9ef9e64f-253e-4125-8437-37fac89cee06" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a77c9cd8-745a-4641-8373-6246a70372d3" type="ORDER-DETAILS-API:BAD_REQUEST, ORDER-DETAILS-API:CONNECTIVITY, ORDER-DETAILS-API:INTERNAL_SERVER_ERROR, ORDER-DETAILS-API:NOT_FOUND, ORDER-DETAILS-API:RETRY_EXHAUSTED, ORDER-DETAILS-API:SERVICE_UNAVAILABLE, ORDER-DETAILS-API:TIMEOUT">
+			<set-payload value='#["Error in OrderDetails System API. Details: " ++ error.description]' doc:name="Error Payload" doc:id="ca787283-482b-41f3-bef8-59032cd144b7" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="5314715c-f96b-4c01-815a-ed32e9f4b7c7" type="ORDERS-API:BAD_REQUEST, ORDERS-API:CONNECTIVITY, ORDERS-API:INTERNAL_SERVER_ERROR, ORDERS-API:NOT_FOUND, ORDERS-API:RETRY_EXHAUSTED, ORDERS-API:SERVICE_UNAVAILABLE">
+			<set-payload value='#["Error in Orders System API. Details: " ++ error.description]' doc:name="Error Payload" doc:id="7836bea9-cc86-4bca-970d-0e01dacd3d03" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="767ab2dd-7c6d-45b5-969c-f09f57df3616" type="PAYMENTS-API:BAD_REQUEST, PAYMENTS-API:CONNECTIVITY, PAYMENTS-API:INTERNAL_SERVER_ERROR, PAYMENTS-API:NOT_ACCEPTABLE, PAYMENTS-API:NOT_FOUND, PAYMENTS-API:RETRY_EXHAUSTED, PAYMENTS-API:SERVICE_UNAVAILABLE, PAYMENTS-API:TIMEOUT">
+			<set-payload value='#["Error in Payments System API. Details: " ++ error.description]' doc:name="Error Payload" doc:id="6bfe1327-e4cc-47b5-8327-9e76afb04425" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d8588394-1237-4804-b21e-c87e988a3fe7" type="CUSTOMER-SYSTEM-API:BAD_REQUEST, CUSTOMER-SYSTEM-API:CONNECTIVITY, CUSTOMER-SYSTEM-API:INTERNAL_SERVER_ERROR, CUSTOMER-SYSTEM-API:NOT_ACCEPTABLE, CUSTOMER-SYSTEM-API:NOT_FOUND, CUSTOMER-SYSTEM-API:RETRY_EXHAUSTED, CUSTOMER-SYSTEM-API:SERVICE_UNAVAILABLE, CUSTOMER-SYSTEM-API:TIMEOUT">
+			<set-payload value='#["Error in Customer System API. Details: " ++ error.description]' doc:name="Error Payload" doc:id="c08c4e37-6866-486d-a75f-9fb84f26c957" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a98d127e-9ca5-4f37-8127-72ab0d0c7d67" type="COMPLAINTS-SYSTEM-API:BAD_REQUEST, COMPLAINTS-SYSTEM-API:CONNECTIVITY, COMPLAINTS-SYSTEM-API:INTERNAL_SERVER_ERROR, COMPLAINTS-SYSTEM-API:NOT_FOUND, COMPLAINTS-SYSTEM-API:RETRY_EXHAUSTED, COMPLAINTS-SYSTEM-API:SECURITY, COMPLAINTS-SYSTEM-API:TIMEOUT">
+			<set-payload value='#["Error in Complaints System API. Details: " ++ error.description]' doc:name="Error Payload" doc:id="faacb66a-a622-4e2c-89fa-379903ba9160" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2d9efdca-2415-4a6b-aa2e-9de2f0bc1c4e" type="ANY">
+			<set-payload value='#["Error Occureed. Details: " ++ error.description]' doc:name="Error Payload" doc:id="b9cd90ae-156c-4376-ad59-7a579d7e7227" />
+		</on-error-propagate>
+	</error-handler>
+	
+</mule>

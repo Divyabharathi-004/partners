@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="implementation-test-suite.xml" />
+	<munit:test name="implementation-test-suite-getDataForPendingComplaintsTest" doc:id="dc3580cb-f0bd-478d-8d0f-d47dea3fd42c" description="Test">
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="85e65106-72da-44df-8ae0-3bab39aba8f7" />
+			<flow-ref doc:name="Flow-ref to getDataForPendingComplaints" doc:id="7b32137a-a037-4fdf-9767-adef37a28d52" name="getDataForPendingComplaints"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="b4c48c2d-8f14-4b31-b0d6-4dc8a6927bc2" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="implementation-test-suite-getDataByComplaintIDTest" doc:id="2e75f8a7-5b8f-4d6c-ba54-18d8757fef16" description="Test">
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="9f72b211-c731-442a-81f9-9cd875bf791b" />
+			<munit:set-event doc:name="Set Event" doc:id="a3318868-a995-4e06-84d1-49925fdf64b8" >
+				<munit:attributes value='#[uriParams: {"CID": 100001}]' mediaType="application/java" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to getDataByComplaintID" doc:id="52928008-055f-4701-b3b0-42c97301298c" name="getDataByComplaintID"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="faaf040d-743b-449f-98af-35ad46e05ea3" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="implementation-test-suite-getDataByCustomerNumberTest" doc:id="a03922f6-43f3-4f29-b87f-1ca4f5c16319" description="Test">
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="5980bda9-2a24-45c1-a833-46f1f24e539a" />
+			<munit:set-event doc:name="Set Event" doc:id="61195fed-38a1-44f6-86d4-93bcf07ab81a" >
+				<munit:attributes value='#[uriParams: {"customerNumber": 10001}]' mediaType="application/java" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to getDataByCustomerNumber" doc:id="e65683e6-b665-48a7-9af6-53611b6bb88f" name="getDataByCustomerNumber"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="a451f05b-f389-4c4e-aa99-33b06aa7820e" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="implementation-test-suite-prteners-processFlowTest" doc:id="5524c144-2b39-4b46-97e7-1c32f67bdd07" description="Test">
+		<munit:execution >
+			<munit:set-null-payload doc:name="Set null payload" doc:id="84e324a9-b9de-4045-a69a-7fc55ed58734" />
+			<flow-ref doc:name="Flow-ref to prteners-processFlow" doc:id="17493ee8-a991-4905-807e-b798966e5d9a" name="prteners-processFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="5e3ca13b-1f4f-40ab-b5af-fee64c5b2d8b" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>
