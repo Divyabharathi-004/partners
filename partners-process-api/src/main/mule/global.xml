@@ -9,7 +9,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="b867f74a-10b4-4634-a98e-d293a954eee8" >
 		<http:listener-connection host="${http.host}" port="${http.port}" />
 	</http:listener-config>
-	<configuration-properties doc:name="Configuration properties" doc:id="3289d11e-95bf-487a-9255-51ae913b596b" file="partner-${env}.yaml" />
+	<configuration-properties doc:name="Configuration properties" doc:id="3289d11e-95bf-487a-9255-51ae913b596b" file="partner-DEV.yaml" />
 	<configuration doc:name="Configuration" doc:id="b3e587fa-fc08-4b9f-8943-4ceaaec5d70d" defaultErrorHandler-ref="globalError_Handler" />
 	<error-handler name="globalError_Handler" doc:id="9ef9e64f-253e-4125-8437-37fac89cee06" >
 		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a77c9cd8-745a-4641-8373-6246a70372d3" type="ORDER-DETAILS-API:BAD_REQUEST, ORDER-DETAILS-API:CONNECTIVITY, ORDER-DETAILS-API:INTERNAL_SERVER_ERROR, ORDER-DETAILS-API:NOT_FOUND, ORDER-DETAILS-API:RETRY_EXHAUSTED, ORDER-DETAILS-API:SERVICE_UNAVAILABLE, ORDER-DETAILS-API:TIMEOUT">
